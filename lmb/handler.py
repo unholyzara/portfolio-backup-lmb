@@ -4,15 +4,15 @@ from typing import Any, Mapping
 from lmb.config import (
     get_aws_region,
     get_bucket,
-    get_secret_name,
     get_db_host,
-    get_db_user,
-    get_db_name,
     get_db_port,
+    get_db_user_param,
+    get_db_password_param,
+    get_db_name_param,
 )
 from lmb.adapters.postgres import PostgresDumper
 from lmb.adapters.s3 import S3BackupStorage
-from lmb.adapters.secrets_manager import SecretManagerClient, load_database_connection
+from lmb.adapters.ssm import SSMClient, get_secrets, load_database_connection
 from lmb.application.create_backup import CreateBackup
 
 
@@ -28,17 +28,19 @@ def _scheduled_time(event: Mapping[str, Any]) -> datetime:
 def handler(event: Mapping[str, Any], context: Any) -> dict[str, str]:
 
     bucket = get_bucket()
-    secret_name = get_secret_name()
     aws_region = get_aws_region()
 
-    secret_client = SecretManagerClient(secret_name=secret_name, aws_region=aws_region)
+    ssm_client = SSMClient(aws_region=aws_region)
+
+    secrets = get_secrets(
+        db_user_param=get_db_user_param(),
+        db_password_param=get_db_password_param(),
+        db_name_param=get_db_name_param(),
+        ssm=ssm_client,
+    )
 
     connection = load_database_connection(
-        secrets=secret_client.get_secrets(),
-        db_host=get_db_host(),
-        db_user=get_db_user(),
-        db_name=get_db_name(),
-        db_port=get_db_port(),
+        secrets=secrets, db_host=get_db_host(), db_port=get_db_port()
     )
     use_case = CreateBackup(
         dumper=PostgresDumper(connection=connection),

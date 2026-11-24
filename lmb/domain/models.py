@@ -1,5 +1,10 @@
 from dataclasses import dataclass
 
+@dataclass
+class Secrets:
+    username: str
+    password: str
+    db_name: str
 
 @dataclass
 class DatabaseConnection:

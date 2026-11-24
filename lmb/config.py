@@ -17,12 +17,14 @@ def get_db_host():
     return os.environ["DB_HOST"]
 
 
-def get_db_user():
-    return os.environ["DB_USER"]
+def get_db_user_param():
+    return os.environ["DB_USER_SMM"]
 
+def get_db_password_param():
+    return os.environ["DB_PASSWORD_SMM"]
 
-def get_db_name():
-    return os.environ["DB_NAME"]
+def get_db_name_param():
+    return os.environ["DB_NAME_SMM"]
 
 
 def get_db_port():
