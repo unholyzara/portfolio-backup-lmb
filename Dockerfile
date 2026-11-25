@@ -1,9 +1,6 @@
 FROM public.ecr.aws/lambda/python:3.12
 
-RUN dnf -y install \
-    https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-$(uname -m)/pgdg-redhat-repo-latest.noarch.rpm \
-    && dnf -qy module disable postgresql \
-    && dnf -y install postgresql16 \
+RUN dnf -y install postgresql \
     && dnf clean all
 
 ENV PATH="/usr/pgsql-16/bin:${PATH}"
