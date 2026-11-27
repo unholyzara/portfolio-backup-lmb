@@ -5,9 +5,22 @@ from pathlib import Path
 from lmb.domain.models import DatabaseConnection
 
 
+def build_command(pg_dump: str, tables: list[str]) -> list[str]:
+    return [
+        pg_dump,
+        "--no-owner",
+        "--no-acl",
+        "--no-password",
+        "--data-only",
+        "--format=plain",
+        *(f"--table=public.{table}" for table in tables),
+    ]
+
+
 class PostgresDumper:
-    def __init__(self, connection: DatabaseConnection) -> None:
+    def __init__(self, connection: DatabaseConnection, tables: list[str]) -> None:
         self._connection = connection
+        self._tables = tables
 
     def dump_to(self, destination: Path) -> None:
         pg_dump = shutil.which("pg_dump")
@@ -25,14 +38,7 @@ class PostgresDumper:
                 "PGSSLMODE": self._connection.ssl_mode,
             }
         )
-        command = [
-            pg_dump,
-            "--no-owner",
-            "--no-acl",
-            "--no-password",
-            "--exclude-table-data=django_session",
-            "--format=plain",
-        ]
+        command = build_command(pg_dump, self._tables)
 
         with tempfile.TemporaryFile() as stderr_file:
             with subprocess.Popen(

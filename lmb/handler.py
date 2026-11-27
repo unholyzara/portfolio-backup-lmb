@@ -9,6 +9,7 @@ from lmb.config import (
     get_db_user_param,
     get_db_password_param,
     get_db_name_param,
+    get_tables,
 )
 from lmb.adapters.postgres import PostgresDumper
 from lmb.adapters.s3 import S3BackupStorage
@@ -43,7 +44,7 @@ def handler(event: Mapping[str, Any], context: Any) -> dict[str, str]:
         secrets=secrets, db_host=get_db_host(), db_port=get_db_port()
     )
     use_case = CreateBackup(
-        dumper=PostgresDumper(connection=connection),
+        dumper=PostgresDumper(connection=connection, tables=get_tables()),
         storage=S3BackupStorage(bucket=bucket),
     )
     artifact = use_case.execute(created_at=_scheduled_time(event))
